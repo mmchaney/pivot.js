@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>QUnit Tests</title>
+	<link rel="stylesheet" href="qunit/qunit.css" media="screen">
+
+<!-- reference your own javascript files here -->
+	<script src="../src/util.js"></script>
+	<script src="modernizr-1.6.min.js"></script>
+	
+  <script>
+    function click(el, clientX, clientY){
+      clientX = clientX || 0;
+      clientY = clientY || 0;
+      var event = document.createEvent('MouseEvents');
+      event.initMouseEvent('click', true, true, document.defaultView, 1, 0, 0, clientX, clientY, false, false, false, false, 0, null);
+      el.dispatchEvent(event);
+    }
+  </script>
+  <script src="../src/util.js"></script>
+
+<!-- test runner files -->
+	<script src="qunit/qunit.js"></script>
+	<script src="util.js"></script>
+	
+</head>
+<body class="flora">
+	<h1 id="qunit-header">QUnit Test Suite</h1>
+	<h2 id="qunit-banner"></h2>
+	<div id="qunit-testrunner-toolbar"></div>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests"></ol>
+	<div id="qunit-fixture" style="height: 3000px">test markup</div>
+	</body>
+</html>
