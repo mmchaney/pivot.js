@@ -3,6 +3,7 @@
 /pivot-no-embed.css
 /index.html
 /dev.html
+/build.xml
 images/
 lib/cssembed-0.3.3.jar
-lib/modernizr-1.6.min.js
+lib/modernizr-1.7.min.js
