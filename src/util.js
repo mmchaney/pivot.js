@@ -21,6 +21,10 @@
     return Element && !!Element.prototype.webkitMatchesSelector;
   });
 
+  Modernizr.addTest('webkitcssmatrix', function () {
+    return !!window.WebKitCSSMatrix;
+  });
+
   // Utility functions
   // -----------------
 

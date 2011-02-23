@@ -32,6 +32,10 @@ bitwise: true, regexp: true, newcap: true, immed: true, maxlen: 300, indent: 2 *
     return Element && !!Element.prototype.webkitMatchesSelector;
   });
 
+  Modernizr.addTest('webkitcssmatrix', function () {
+    return !!window.WebKitCSSMatrix;
+  });
+
   // Utility functions
   // -----------------
 
@@ -276,8 +280,7 @@ bitwise: true, regexp: true, newcap: true, immed: true, maxlen: 300, indent: 2 *
 
   var pivot = window.pivot || (window.pivot = {}),
       document = window.document,
-      supplant = pivot.util.supplant,
-      matrix = new WebKitCSSMatrix();
+      supplant = pivot.util.supplant;
 
   pivot.Gallery = function (options) {
 
@@ -417,6 +420,9 @@ bitwise: true, regexp: true, newcap: true, immed: true, maxlen: 300, indent: 2 *
 
   pivot.Gallery.prototype = {
 
+    // Add untransformed matrix to efficiently apply transforms
+    matrix: Modernizr.webkitcssmatrix ? new WebKitCSSMatrix() : undefined,   
+
     // Make zoomPlane square and centered within viewport
     constrainLayout: function () {
       var width = this.container.offsetWidth,
@@ -543,7 +549,7 @@ bitwise: true, regexp: true, newcap: true, immed: true, maxlen: 300, indent: 2 *
     zoomIn: function () {
       this.container.classList.add('zoomed');
       this.zoomed = true;
-      this.zoomPlane.style.webkitTransform = matrix;
+      this.zoomPlane.style.webkitTransform = this.matrix;
       this.track();
 
       if (!this.tilting) {
@@ -554,7 +560,7 @@ bitwise: true, regexp: true, newcap: true, immed: true, maxlen: 300, indent: 2 *
     zoomOut: function () {
       this.container.classList.remove('zoomed');
       this.zoomed = false;
-      this.zoomPlane.style.webkitTransform = matrix.translate(0, 0, -this.rows * 800);
+      this.zoomPlane.style.webkitTransform = this.matrix.translate(0, 0, -this.rows * 800);
       this.track();
     },
 
@@ -591,7 +597,7 @@ bitwise: true, regexp: true, newcap: true, immed: true, maxlen: 300, indent: 2 *
       this.currentRotation.x += this.rotationDelta.x;
       this.currentRotation.y -= this.rotationDelta.y;
 
-      this.tiltPlane.style.webkitTransform = matrix.rotate(this.currentRotation.x, this.currentRotation.y, 0);
+      this.tiltPlane.style.webkitTransform = this.matrix.rotate(this.currentRotation.x, this.currentRotation.y, 0);
       //this.tiltPlane.style.webkitTransform = supplant('rotateX({x}deg) rotateY({y}deg)', this.currentRotation.x, this.currentRotation.y);
 
       // Continue tilting if deltas are still reasonably large
@@ -699,7 +705,7 @@ bitwise: true, regexp: true, newcap: true, immed: true, maxlen: 300, indent: 2 *
   };
 
   pivot.setup = function (options) {
-    if (Modernizr && Modernizr.webkitmatchesselector && Modernizr.csstransforms3d) {
+    if (Modernizr && Modernizr.webkitcssmatrix && Modernizr.webkitmatchesselector && Modernizr.csstransforms3d) {
       return new pivot.Gallery(options);
     }
   };
