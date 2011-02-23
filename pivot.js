@@ -31,10 +31,6 @@ bitwise: true, regexp: true, newcap: true, immed: true, maxlen: 300, indent: 2 *
   Modernizr.addTest('webkitmatchesselector', function () {
     return Element && !!Element.prototype.webkitMatchesSelector;
   });
-  
-  Modernizr.addTest('webkitcssmatrix', function () {
-    return !!WebKitCSSMatrix;
-  });  
 
   // Utility functions
   // -----------------
@@ -235,7 +231,7 @@ bitwise: true, regexp: true, newcap: true, immed: true, maxlen: 300, indent: 2 *
   }
 
   // Element::classList (does not fully implement ES5 spec)
-  if (typeof Element !== 'undefined' && !Element.prototype.classList) {
+  if (typeof Element !== 'undefined' && !Element.hasOwnProperty.call(Element.prototype, 'classList')) {
     (function () {
       var classRE = function (token) {
             return new RegExp('(^|\\s)' + token + '(\\s|$)');

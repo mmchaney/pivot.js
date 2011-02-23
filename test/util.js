@@ -1,12 +1,12 @@
 module("util.js");
 
-test('glint.util.makeElement', function () {
-  var el = glint.util.makeElement('div');
+test('pivot.util.makeElement', function () {
+  var el = pivot.util.makeElement('div');
 
   equals(el.nodeType, 1);
   equals(el.tagName.toLowerCase(), 'div');
 
-  el = glint.util.makeElement('p', {
+  el = pivot.util.makeElement('p', {
     'class': 'paragraph',
     'title': 'woot'
   });
