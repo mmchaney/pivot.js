@@ -4,10 +4,11 @@
  * By Markus Messner-Chaney, http://markusmessnerchaney.com
  * Public Domain.
  */
-
-/*jslint onevar: true, undef: true, newcap: true, regexp: true, bitwise: true, browser: true, devel: true*/
+ 
+/*jshint browser: true, boss: true, curly: true, eqeqeq: true, immed: true, 
+  newcap: true, noarg: true, noempty: true, overvar: true, undef: true, 
+  white: true, indent: 2 */
 /*global pivot, Element, WebKitCSSMatrix, Modernizr */
-
 (function (window) {
 
   var pivot = window.pivot || (window.pivot = {}),
@@ -44,7 +45,7 @@
     for (prop in attributes) {
       if (prop === 'class') {
         element.className = attributes[prop];
-      } else {
+      } else if (attributes.hasOwnProperty(prop)) {
         element.setAttribute(prop, attributes[prop]);
       }
     }
