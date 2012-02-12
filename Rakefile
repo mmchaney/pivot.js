@@ -10,7 +10,7 @@ PIVOT_COMPONENTS = [
   'flickr',
 ]
 
-task :default => [:clean, :concat, :css, :dist]
+task :default => [:clean, :concat, :dist]
 
 desc "Clean the distribution directory."
 task :clean do
