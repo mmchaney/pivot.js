@@ -1,9 +1,4 @@
 .sass-cache/
-/pivot.scss
-/pivot-no-embed.css
-/index.html
-/dev.html
-/build.xml
-images/
-lib/cssembed-0.3.3.jar
-lib/modernizr-1.7.min.js
+test.html
+index.html
+src/pivot.scss

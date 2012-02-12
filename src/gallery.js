@@ -3,7 +3,8 @@
 
   var pivot = window.pivot || (window.pivot = {}),
       document = window.document,
-      supplant = pivot.util.supplant;
+      supplant = pivot.util.supplant,
+      transform = Modernizr.prefixed("Transform");
 
   pivot.Gallery = function (options) {
 
@@ -11,7 +12,7 @@
 
     this.wrapper = options.wrapper || document.body;
 
-    this.quality = options.quality || 'medium';
+    this.quality = options.quality || "medium";
 
     this.rows = options.rows;
     this.columns = options.columns;
@@ -64,23 +65,23 @@
     // Setup DOM
     // ---------
 
-    this.container = pivot.util.makeElement('div', { 'class': 'pivot' });
+    this.container = pivot.util.makeElement("div", { "class": "pivot" });
 
     if (!options.wrapper) {
-      this.container.classList.add('fullscreen');
+      this.container.classList.add("fullscreen");
     }
 
     this.wrapper.appendChild(this.container);
 
-    this.viewport = pivot.util.makeElement('div', { 'class': 'p-viewport' });
+    this.viewport = pivot.util.makeElement("div", { "class": "p-viewport" });
 
-    this.zoomPlane = pivot.util.makeElement('div', { 'class': 'p-zoom-plane' });
+    this.zoomPlane = pivot.util.makeElement("div", { "class": "p-zoom-plane" });
     this.viewport.appendChild(this.zoomPlane);
 
-    this.tiltPlane = pivot.util.makeElement('div', { 'class': 'p-tilt-plane' });
+    this.tiltPlane = pivot.util.makeElement("div", { "class": "p-tilt-plane" });
     this.zoomPlane.appendChild(this.tiltPlane);
 
-    this.trackingPlane = pivot.util.makeElement('div', { 'class': 'p-tracking-plane' });
+    this.trackingPlane = pivot.util.makeElement("div", { "class": "p-tracking-plane" });
     this.tiltPlane.appendChild(this.trackingPlane);
 
     for (row = 0; row < this.rows; row++) {
@@ -95,9 +96,9 @@
       }
     }
 
-    this.controls = pivot.util.makeElement('div', { 'class': 'p-controls' });
+    this.controls = pivot.util.makeElement("div", { "class": "p-controls" });
 
-    this.refresh = pivot.util.makeElement('button', { 'class': 'p-refresh' });
+    this.refresh = pivot.util.makeElement("button", { "class": "p-refresh" });
     this.controls.appendChild(this.refresh);
 
     this.constrainLayout();
@@ -108,27 +109,28 @@
     // Setup events
     // ------------
 
-    window.addEventListener('resize', this.constrainLayout, false);
-    this.trackingPlane.addEventListener('load', this.onPhotoLoaded.bind(this), false);
-    document.addEventListener('keydown', this.onKeyDown.bind(this), false);
-    pivot.util.delegate(this.viewport, '.p-photo', 'click', this.onPhotoClickDelegate.bind(this));
-    this.viewport.addEventListener('mousewheel', this.onViewportMouseWheel.bind(this), false);
-    this.refresh.addEventListener('click', this.getNextFlickrPage, false);
+    window.addEventListener("resize", this.constrainLayout, false);
+    this.trackingPlane.addEventListener("load", this.onPhotoLoaded.bind(this), false);
+    document.addEventListener("keydown", this.onKeyDown.bind(this), false);
+    pivot.util.delegate(this.viewport, ".p-photo", "click", this.onPhotoClickDelegate.bind(this));
+    this.viewport.addEventListener("mousewheel", this.onViewportMouseWheel.bind(this), false);
+    this.viewport.addEventListener("DOMMouseScroll", this.onViewportMouseWheel.bind(this), false);
+    this.refresh.addEventListener("click", this.getNextFlickrPage, false);
 
     this.zoomOut = this.zoomOut.bind(this);
-    this.container.addEventListener('click', this.zoomOut, false);
+    this.container.addEventListener("click", this.zoomOut, false);
 
-    if (Modernizr.devicemotion) {
-      window.addEventListener('devicemotion', this.onDeviceMotion.bind(this), false);
-      window.addEventListener('orientationchange', this.constrainLayout, false);
+    if (Modernizr.devicemotion  && Modernizr.touch) {
+      window.addEventListener("devicemotion", this.onDeviceMotion.bind(this), false);
+      window.addEventListener("orientationchange", this.constrainLayout, false);
     } else {
-      this.container.addEventListener('mousemove', this.onContainerMouseMove.bind(this), false);
+      this.container.addEventListener("mousemove", this.onContainerMouseMove.bind(this), false);
     }
 
     if (Modernizr.touch) {
       pivot.util.preventTouchScroll(document.body);
-      pivot.util.gesturize(this.viewport, 'swipeleft', this.cycle.bind(this, 'next'), true, false);
-      pivot.util.gesturize(this.viewport, 'swiperight', this.cycle.bind(this, 'prev'), true, false);
+      pivot.util.gesturize(this.viewport, "swipeleft", this.cycle.bind(this, "next"), true, false);
+      pivot.util.gesturize(this.viewport, "swiperight", this.cycle.bind(this, "prev"), true, false);
     }
 
     // Finalize setup
@@ -143,22 +145,19 @@
 
   pivot.Gallery.prototype = {
 
-    // Add untransformed matrix to efficiently apply transforms
-    matrix: Modernizr.webkitcssmatrix ? new WebKitCSSMatrix() : undefined,   
-
     // Make zoomPlane square and centered within viewport
     constrainLayout: function () {
       var width = this.container.offsetWidth,
           height = this.container.offsetHeight,
           min = Math.min(width, height);
 
-      this.zoomPlane.style.width = this.zoomPlane.style.height = min + 'px';
+      this.zoomPlane.style.width = this.zoomPlane.style.height = min + "px";
 
       if (width > height) {
-        this.zoomPlane.style.left = (width - height) / 2 + 'px';
+        this.zoomPlane.style.left = (width - height) / 2 + "px";
         this.zoomPlane.style.top = 0;
       } else {
-        this.zoomPlane.style.top = (height - width) / 2 + 'px';
+        this.zoomPlane.style.top = (height - width) / 2 + "px";
         this.zoomPlane.style.left = 0;
       }
     },
@@ -172,18 +171,18 @@
     },
 
     getSelectedPhoto: function () {
-      return this.container.querySelector('.p-photo.selected');
+      return this.container.querySelector(".p-photo.selected");
     },
 
     setSelectedPhoto: function (photo) {
       var selectedPhoto = this.getSelectedPhoto();
 
       if (selectedPhoto) {
-        selectedPhoto.classList.remove('selected');
-        selectedPhoto.classList.remove('flipped');
+        selectedPhoto.classList.remove("selected");
+        selectedPhoto.classList.remove("flipped");
       }
 
-      photo.classList.add('selected');
+      photo.classList.add("selected");
 
       this.track();
 
@@ -192,23 +191,23 @@
 
     cycle: function (direction) {
       var selectedPhoto = this.getSelectedPhoto(),
-          row = selectedPhoto ? parseInt(selectedPhoto.getAttribute('data-row'), 10) : 0,
-          column = selectedPhoto ? parseInt(selectedPhoto.getAttribute('data-column'), 10) : 0;
+          row = selectedPhoto ? parseInt(selectedPhoto.getAttribute("data-row"), 10) : 0,
+          column = selectedPhoto ? parseInt(selectedPhoto.getAttribute("data-column"), 10) : 0;
 
       switch (direction) {
-      case 'left':
+      case "left":
         column = pivot.util.mod(column - 1, this.columns);
         break;
-      case 'right':
+      case "right":
         column = (column + 1) % this.columns;
         break;
-      case 'up':
+      case "up":
         row = pivot.util.mod(row - 1, this.rows);
         break;
-      case 'down':
+      case "down":
         row = (row + 1) % this.rows;
-        break;      
-      case 'next':
+        break;
+      case "next":
         if (column < this.columns - 1) {
           column++;
         } else {
@@ -216,7 +215,7 @@
           row = (row < this.rows - 1) ? row + 1 : 0;
         }
         break;
-      case 'prev':
+      case "prev":
         if (column) { // !== 0
           column--;
         } else {
@@ -234,7 +233,7 @@
 
     sendFlickrRequest: function (feed) {
       this.photoLoadCount = 0;
-      this.container.classList.add('gallery-loading');
+      this.container.classList.add("gallery-loading");
       pivot.util.getJSON(feed, this.onFlickrResult);
     },
 
@@ -270,9 +269,9 @@
     // -----------
 
     zoomIn: function () {
-      this.container.classList.add('zoomed');
+      this.container.classList.add("zoomed");
       this.zoomed = true;
-      this.zoomPlane.style.webkitTransform = this.matrix;
+      this.zoomPlane.style[transform] = "translate3d(0, 0, 0)";
       this.track();
 
       if (!this.tilting) {
@@ -281,9 +280,11 @@
     },
 
     zoomOut: function () {
-      this.container.classList.remove('zoomed');
+      this.container.classList.remove("zoomed");
       this.zoomed = false;
-      this.zoomPlane.style.webkitTransform = this.matrix.translate(0, 0, -this.rows * 800);
+      this.zoomPlane.style[transform] = supplant("translate3d(0, 0, {z}px)", {
+        z: -this.rows * 800
+      });
       this.track();
     },
 
@@ -293,19 +294,19 @@
       if (this.zoomed) {
         // Center selected photo in viewport
         selectedPhoto = this.getSelectedPhoto();
-        trackingTransform = supplant('translate3d({x}%, {y}%, -150px)', {
-          x: selectedPhoto.getAttribute('data-column') * -100,
-          y: selectedPhoto.getAttribute('data-row') * -100
+        trackingTransform = supplant("translate3d({x}%, {y}%, -150px)", {
+          x: selectedPhoto.getAttribute("data-column") * -100,
+          y: selectedPhoto.getAttribute("data-row") * -100
         });
       } else {
         // Center gallery in viewport
-        trackingTransform = supplant('translate3d({x}%, {y}%, 1px)', {
+        trackingTransform = supplant("translate3d({x}%, {y}%, 1px)", {
           x: (this.columns / 2) * -100 + 50,
           y: (this.rows / 2) * -100 + 50
         });
       }
 
-      this.trackingPlane.style.webkitTransform = trackingTransform;
+      this.trackingPlane.style[transform] = trackingTransform;
     },
 
     tilt: function () {
@@ -320,8 +321,7 @@
       this.currentRotation.x += this.rotationDelta.x;
       this.currentRotation.y -= this.rotationDelta.y;
 
-      this.tiltPlane.style.webkitTransform = this.matrix.rotate(this.currentRotation.x, this.currentRotation.y, 0);
-      //this.tiltPlane.style.webkitTransform = supplant('rotateX({x}deg) rotateY({y}deg)', this.currentRotation.x, this.currentRotation.y);
+      this.tiltPlane.style[transform] = supplant("rotateX({x}deg) rotateY({y}deg)", this.currentRotation.x, this.currentRotation.y);
 
       // Continue tilting if deltas are still reasonably large
       if (Math.abs(this.rotationDelta.x) + Math.abs(this.rotationDelta.y) > 0.05) {
@@ -338,12 +338,12 @@
       this.photoLoadCount++;
 
       if (this.photoLoadCount === this.photos.length) {
-        this.container.classList.remove('gallery-loading');
+        this.container.classList.remove("gallery-loading");
       }
     },
 
     onPhotoClickDelegate: function (event) {
-      var photo = pivot.util.ancestor(event.target, '.p-photo');
+      var photo = pivot.util.ancestor(event.target, ".p-photo");
 
       if (event.target !== photo) {
         event.stopPropagation();
@@ -356,7 +356,7 @@
     },
 
     onViewportMouseWheel: function (event) {
-      if (event.wheelDelta < 0) {
+      if (event.wheelDelta || event.detail < 0) {
         this.zoomOut();
       } else {
         this.onPhotoClickDelegate(event);
@@ -379,7 +379,7 @@
         this.cycle('down');
         break;
       case 13: // Enter. Flip photo.
-        this.getSelectedPhoto().classList.toggle('flipped');
+        this.getSelectedPhoto().classList.toggle("flipped");
         break;
       case 82: // R. Next page.
         this.getNextFlickrPage();
@@ -404,8 +404,8 @@
 
     onDeviceMotion: function (event) {
       var portrait = (window.orientation % 180) === 0,
-          vertAxis = portrait ? 'x' : 'y',
-          horizAxis = portrait ? 'y' : 'x',
+          vertAxis = portrait ? "x" : "y",
+          horizAxis = portrait ? "y" : "x",
           mod;
 
       mod = {
@@ -428,7 +428,7 @@
   };
 
   pivot.setup = function (options) {
-    if (Modernizr && Modernizr.webkitcssmatrix && Modernizr.webkitmatchesselector && Modernizr.csstransforms3d) {
+    if (Modernizr && Modernizr.matchesselector && Modernizr.csstransforms3d) {
       return new pivot.Gallery(options);
     }
   };

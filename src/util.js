@@ -2,27 +2,22 @@
 (function (window) {
 
   var pivot = window.pivot || (window.pivot = {}),
-      document = window.document;
+      document = window.document,
+      elProto = Element.prototype,
+      fnProto = Function.prototype;
 
   pivot.util = {};
   pivot.util.slice = [].slice;
-  
-  // Add class to body for Windows Chrome.
-  // CSS styles are then set differently to prevent severe aliasing on Windows Chrome.
-  Modernizr.addTest('skia', function () {
-    return (/Win/).test(window.navigator.platform) && (/Chrome/).test(window.navigator.userAgent);
-  });
 
-  Modernizr.addTest('devicemotion', function () {
+  Modernizr.addTest("devicemotion", function () {
     return window.ondevicemotion !== undefined;
   });
-  
-  Modernizr.addTest('webkitmatchesselector', function () {
-    return Element && !!Element.prototype.webkitMatchesSelector;
-  });
 
-  Modernizr.addTest('webkitcssmatrix', function () {
-    return !!window.WebKitCSSMatrix;
+  Modernizr.addTest("matchesselector", function () {
+    var matchesSelector = ["webkit", "moz", "ms", "o"].reduce(function (matchesSelector, prefix) {
+      return matchesSelector || elProto[prefix + "MatchesSelector"];
+    }, elProto.matchesSelector);
+    return !!(pivot.util.matchesSelector = matchesSelector && fnProto.call.bind(matchesSelector));
   });
 
   // Utility functions
@@ -33,7 +28,7 @@
         prop;
 
     for (prop in attributes) {
-      if (prop === 'class') {
+      if (prop === "class") {
         element.className = attributes[prop];
       } else {
         element.setAttribute(prop, attributes[prop]);
@@ -42,7 +37,7 @@
 
     return element;
   }
-  
+
   function delegate(element, selector, type, listener) {
     element.addEventListener(type, function (event) {
       var target = event.target,
@@ -54,12 +49,12 @@
         listener.call(target, event);
       }
     }, false);
-  }  
-  
+  }
+
   function ancestor(element, selector) {
-    while (element !== document && !element.webkitMatchesSelector(selector)) {
+    while (element !== document && !pivot.util.matchesSelector(element, selector)) {
       element = element.parentNode;
-    } 
+    }
     return element;
   }
 
@@ -67,7 +62,7 @@
     var args = pivot.util.slice.call(arguments),
         i = 0,
         arg;
-    if (typeof(args[1]) === 'object') {
+    if (typeof(args[1]) === "object") {
       return string.replace(/\{(\w+)\}/g, function () {
         return (args[1][arguments[1]] !== undefined) ? args[1][arguments[1]] : arguments[0];
       });
@@ -113,43 +108,43 @@
   function Gesturized(element, type, handler) {
     this.element = element;
     this.setType(type);
-    
+
     this.element.addEventListener(type, handler, false);
-    
+
     this.onTouchEnd = this.onTouchEnd.bind(this);
     this.onTouchMove = this.onTouchMove.bind(this);
     this.onTouchStart = this.onTouchStart.bind(this);
 
-    this.element.addEventListener('touchstart', this.onTouchStart, false);
+    this.element.addEventListener("touchstart", this.onTouchStart, false);
   }
-  
-  Gesturized.availableEvents = ['swipeleft', 'swiperight'];
+
+  Gesturized.availableEvents = ["swipeleft", "swiperight"];
 
   Gesturized.prototype = {
-    
+
     setType: function (type) {
       this.type = type.toLowerCase();
-      this.event = document.createEvent('Events');
-      this.event.initEvent(type, true, false);              
+      this.event = document.createEvent("Events");
+      this.event.initEvent(type, true, false);
     },
-    
+
     dispatchEvent: function (target, type) {
       if (this.type === type.toLowerCase()) {
         target.dispatchEvent(this.event);
       }
     },
-    
+
     getCoords: function (event) {
       return {
         x: event.touches[0].pageX,
         y: event.touches[0].pageY
       };
-    },    
+    },
 
     onTouchStart: function (event) {
       if ((this.startCoords = this.getCoords(event))) {
-        this.element.addEventListener('touchend', this.onTouchEnd, false);
-        this.element.addEventListener('touchmove', this.onTouchMove, false);
+        this.element.addEventListener("touchend", this.onTouchEnd, false);
+        this.element.addEventListener("touchmove", this.onTouchMove, false);
       }
     },
 
@@ -157,22 +152,22 @@
       this.moveCoords = this.getCoords(event);
     },
 
-    onTouchEnd: function (event) {  
+    onTouchEnd: function (event) {
       var diff;
 
-      this.element.removeEventListener('touchend', this.onTouchEnd, false);
-      this.element.removeEventListener('touchmove', this.onTouchMove, false);
+      this.element.removeEventListener("touchend", this.onTouchEnd, false);
+      this.element.removeEventListener("touchmove", this.onTouchMove, false);
 
-      // Check for swipes   
+      // Check for swipes
       if (this.moveCoords) {
         diff = {
           x: this.startCoords.x - this.moveCoords.x,
           y: this.startCoords.y - this.moveCoords.y
         };
         if (Math.abs(diff.x) > 30 || Math.abs(diff.y) > 30) {
-          this.dispatchEvent(event.target, (diff.x > 0) ? 'swipeleft' : 'swiperight');
+          this.dispatchEvent(event.target, (diff.x > 0) ? "swipeleft" : "swiperight");
         }
-        delete this.moveCoords;         
+        delete this.moveCoords;
       }
     }
   };
@@ -180,12 +175,12 @@
   function gesturize(element, type, handler) {
     return new Gesturized(element, type, handler);
   }
-  
+
   function preventTouchScroll(element) {
     var preventScroll = function (event) {
           event.preventDefault();
         };
-    element.addEventListener('touchmove', preventScroll, false);
+    element.addEventListener("touchmove", preventScroll, false);
   }
 
   pivot.util.makeElement = makeElement;
@@ -197,19 +192,9 @@
   pivot.util.mod = mod;
   pivot.util.gesturize = gesturize;
   pivot.util.preventTouchScroll = preventTouchScroll;
-  
+
   // ES5 Polyfills
   // -------------
-  
-  Function.prototype.bind = Function.prototype.bind ||
-  function (thisArg) {
-    var fn = this,
-        args = pivot.util.slice.call(arguments, 1);
-
-    return function () {
-      return fn.apply(thisArg, args.concat(pivot.util.slice.call(arguments)));
-    };
-  };
 
   // Emulate ES5 getter/setter API using legacy APIs
   if (Object.prototype.__defineGetter__ && !Object.defineProperty) {
@@ -224,10 +209,10 @@
   }
 
   // Element::classList (does not fully implement ES5 spec)
-  if (typeof Element !== 'undefined' && !Element.hasOwnProperty.call(Element.prototype, 'classList')) {
+  if (typeof Element != null && !Element.hasOwnProperty.call(Element.prototype, "classList")) {
     (function () {
       var classRE = function (token) {
-            return new RegExp('(^|\\s)' + token + '(\\s|$)');
+            return new RegExp("(^|\\s)" + token + "(\\s|$)");
           },
           ClassList = function (element) {
             this.element = element;
@@ -242,23 +227,23 @@
         },
         add: function (token) {
           if (!this.contains(token)) {
-            this.element.className += (this.element.className ? ' ' : '') + token;
+            this.element.className += (this.element.className ? " " : "") + token;
           }
         },
         remove: function (token) {
-          this.element.className = this.element.className.replace(classRE(token), ' ').trim();
+          this.element.className = this.element.className.replace(classRE(token), " ").trim();
         },
         toggle: function (token) {
           var boundClassRE = classRE(token);
           if (boundClassRE.test(this.element.className)) {
-            this.element.className = this.element.className.replace(boundClassRE, ' ').trim();
+            this.element.className = this.element.className.replace(boundClassRE, " ").trim();
           } else {
-            this.element.className += (this.element.className ? ' ' : '') + token;
+            this.element.className += (this.element.className ? " " : "") + token;
           }
         }
       };
 
-      Object.defineProperty(Element.prototype, 'classList', {
+      Object.defineProperty(Element.prototype, "classList", {
         get: getClassList
       });
     }());
