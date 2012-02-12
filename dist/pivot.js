@@ -8,7 +8,7 @@
 /*jshint browser: true, boss: true, curly: true, eqeqeq: true, immed: true,
   newcap: true, noarg: true, noempty: true, overvar: true, undef: true,
   white: true, indent: 2 */
-/*global pivot, Element, WebKitCSSMatrix, Modernizr */
+/*global pivot, Element, Modernizr */
 
 (function (window) {
 
@@ -584,7 +584,6 @@
       this.currentRotation.x += this.rotationDelta.x;
       this.currentRotation.y -= this.rotationDelta.y;
 
-      //this.tiltPlane.style.webkitTransform = this.matrix.rotate(this.currentRotation.x, this.currentRotation.y, 0);
       this.tiltPlane.style[transform] = supplant("rotateX({x}deg) rotateY({y}deg)", this.currentRotation.x, this.currentRotation.y);
 
       // Continue tilting if deltas are still reasonably large
